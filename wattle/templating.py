@@ -32,6 +32,6 @@ class TemplateLoader(jinja2.BaseLoader):
 env = Environment()
 
 
-def render_template(name, **kwargs):
-    template = env.get_template(name)
+def render_template(_name, **kwargs):
+    template = env.get_template(_name)
     return template.render(**kwargs)
