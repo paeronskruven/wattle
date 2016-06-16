@@ -12,3 +12,8 @@ class Response:
     status = None
     headers = []
     body = ''
+
+    def clear(self):
+        self.status = None
+        self.headers = []
+        self.body = ''

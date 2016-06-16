@@ -1,0 +1,17 @@
+body {
+    background: #f7f7f7;
+    padding: 0;
+    margin: 0;
+    font-family: Verdana;
+}
+
+#wrapper {
+    width: 980px;
+    margin: 0 auto;
+}
+
+#header {
+    height: 180px;
+    background: #b4b3fd;
+    padding: 20px;
+}
