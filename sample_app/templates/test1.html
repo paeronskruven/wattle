@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>Jinja2 parameter test</h2>
+    <p>
+        This page contains data created in the backend and parsed by Jinja2.
+        <br/>
+        {{ param1 }}
+        <br/>
+        {{ param2 }}{{ param3 }}
+    </p>
+{% endblock %}
