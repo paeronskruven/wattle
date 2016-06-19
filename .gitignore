@@ -1,2 +1,6 @@
 # ignore compiled python files
 *.pyc
+
+# ignore dir added by PyCharm
+.idea
+.idea/*
