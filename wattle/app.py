@@ -12,7 +12,7 @@ class NotFoundException(BaseException):
     pass
 
 
-class InvalidResourceType(BaseException):
+class InvalidResourceTypeException(BaseException):
     pass
 
 
@@ -34,23 +34,23 @@ class App:
 
     def _handle_static_resource(self, resource):
 
-        def get_content_type_header(resource):
+        def get_content_type(resource):
             delim = resource.rfind('.')
             suffix = resource[delim + 1:]
 
             def content_type_switch(suffix):
                 return {
-                    'html': ('Content-type', 'text/html; charset=utf-8'),
-                    'css': ('Content-type', 'text/css; charset=utf-8'),
-                    'js': ('Content-type', 'text/javascript; charset=utf-8')
+                    'html': 'text/html; charset=utf-8',
+                    'css': 'text/css; charset=utf-8',
+                    'js': 'text/javascript; charset=utf-8'
                 }.get(suffix)
-            
+
             return content_type_switch(suffix)
 
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
             self.response.headers = [];
-            self.response.headers.append(get_content_type_header(resource))
+            self.response.headers.append(('Content-type', get_content_type(resource)))
             with open(path) as f:
                 source = f.read()
             return source
