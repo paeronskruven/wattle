@@ -12,8 +12,11 @@ class NotFoundException(BaseException):
     pass
 
 
-class App:
+class InvalidResourceType(BaseException):
+    pass
 
+
+class App:
     response = Response()
 
     static_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'static')
@@ -26,12 +29,28 @@ class App:
         def decorator(func):
             self._router.add_route(path, func)
             return func
+
         return decorator
 
     def _handle_static_resource(self, resource):
+
+        def get_content_type_header(resource):
+            delim = resource.rfind('.')
+            suffix = resource[delim + 1:]
+
+            def content_type_switch(suffix):
+                return {
+                    'html': ('Content-type', 'text/html; charset=utf-8'),
+                    'css': ('Content-type', 'text/css; charset=utf-8'),
+                    'js': ('Content-type', 'text/javascript; charset=utf-8')
+                }.get(suffix)
+            
+            return content_type_switch(suffix)
+
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
-            self.response.headers = [('Content-type', 'text/css; charset=utf-8')]
+            self.response.headers = [];
+            self.response.headers.append(get_content_type_header(resource))
             with open(path) as f:
                 source = f.read()
             return source
