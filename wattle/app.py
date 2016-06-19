@@ -6,6 +6,7 @@ import sys
 from .routing import Router
 from .request import Request
 from .response import Response, ResponseStatus
+from .resource import ResourceUtil
 
 
 class NotFoundException(BaseException):
@@ -34,23 +35,10 @@ class App:
 
     def _handle_static_resource(self, resource):
 
-        def get_content_type(resource):
-            delim = resource.rfind('.')
-            suffix = resource[delim + 1:]
-
-            def content_type_switch(suffix):
-                return {
-                    'html': 'text/html; charset=utf-8',
-                    'css': 'text/css; charset=utf-8',
-                    'js': 'text/javascript; charset=utf-8'
-                }.get(suffix)
-
-            return content_type_switch(suffix)
-
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
             self.response.headers = [];
-            self.response.headers.append(('Content-type', get_content_type(resource)))
+            self.response.headers.append(('Content-type', ResourceUtil._get_content_type(resource)))
             with open(path) as f:
                 source = f.read()
             return source
