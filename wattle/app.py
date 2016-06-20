@@ -7,6 +7,7 @@ from .routing import Router
 from .request import Request
 from .response import Response, ResponseStatus
 from .resource import ResourceUtil
+from .cookie import cookie_collection
 
 
 class NotFoundException(BaseException):
@@ -19,6 +20,7 @@ class InvalidResourceTypeException(BaseException):
 
 class App:
     response = Response()
+    request = None
 
     static_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'static')
 
@@ -45,10 +47,10 @@ class App:
         else:
             raise NotFoundException()
 
-    def _handle_request(self, request):
+    def _handle_request(self):
         self.response.clear()
         self.response.headers = [('Content-type', 'text/html; charset=utf-8')]
-        route = self._router.resolve_route(request.path)
+        route = self._router.resolve_route(self.request.path)
         if route:
             self.response.status = ResponseStatus.RESPONSE_STATUS_200
             kwargs, func = route
@@ -57,12 +59,22 @@ class App:
             raise NotFoundException()
 
     def __call__(self, environ, start_response):
-        request = Request(environ)
+        self.request = Request(environ)
+
+        # clear cookies and parse from request
+        cookie_collection.clear()
+        cookie_collection.parse_request(self.request.http_cookie)
+
         try:
-            self._handle_request(request)
+            self._handle_request()
         except NotFoundException:
             self.response.clear()
             self.response.status = ResponseStatus.RESPONSE_STATUS_404
+
+        # add cookies that should be sent to the client
+        for value in cookie_collection.values():
+            if value.send:
+                self.response.headers.append(value.get_header())
 
         start_response(self.response.status, self.response.headers)
         return [self.response.body.encode('utf-8')]

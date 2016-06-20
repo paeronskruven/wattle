@@ -10,4 +10,5 @@ class Request:
         self.content_type = env.get('CONTENT_TYPE')
         self.content_length = env.get('CONTENT_LENGTH')
         self.protocol = env.get('SERVER_PROTOCOL')
+        self.http_cookie = env.get('HTTP_COOKIE')
 
