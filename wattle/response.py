@@ -1,5 +1,9 @@
 __author__ = 'Tommy Lundgren'
 
+import http.cookies
+
+from .cookie import Cookie
+
 
 class ResponseStatus:
     # todo: implement all response statuses
@@ -9,11 +13,54 @@ class ResponseStatus:
 
 class Response:
 
-    status = None
-    headers = []
-    body = ''
+    _status = None
+    _headers = []
+    _body = ''
+
+    def __init__(self):
+        self._base_cookie = http.cookies.BaseCookie()
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        self._status = status
+
+    @property
+    def headers(self):
+        # add the cookie headers
+        for key in self._base_cookie:
+            self._headers.append(('Set-Cookie', self._base_cookie[key].OutputString()))
+        return self._headers
+
+    @property
+    def body(self):
+        return self._body
+
+    @body.setter
+    def body(self, body):
+        self._body = body
+
+    def add_cookie(self, cookie):
+        if not isinstance(cookie, Cookie):
+            raise TypeError('Excepted <class wattle.cookie.Cookie>, got {}'.format(type(cookie)))
+
+        self._base_cookie[cookie.key] = cookie.value
+        self._base_cookie[cookie.key]['path'] = cookie.path
+        # todo: implement the rest of the cookie attributes
+
+    def add_header(self, header):
+        self._headers.append(header)
+
+    def clear_headers(self):
+        self._headers = []
 
     def clear(self):
-        self.status = None
-        self.headers = []
-        self.body = ''
+        self._status = None
+        self._headers = []
+        self._body = ''
+        self._base_cookie.clear()
+
+response = Response()

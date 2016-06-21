@@ -17,6 +17,13 @@ def test1():
     param3 = 100
     return wattle.render_template('test1.html', param1=param1, param2=param2, param3=param3)
 
+@app.route('/cookie')
+def cookie_test():
+    c = wattle.Cookie('test', 'ilikecookies2')
+    wattle.response.add_cookie(c)
+    return wattle.render_template('simple_page.html', title='Cookie test')
+
+
 if __name__ == '__main__':
     server = wsgiref.simple_server.make_server('', 8090, app)
     server.serve_forever()
