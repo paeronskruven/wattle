@@ -19,14 +19,10 @@ def test1():
 
 @app.route('/cookie')
 def cookie_test():
-    wattle.Cookie('test', 'ilikecookies')
+    c = wattle.Cookie('test', 'ilikecookies2')
+    wattle.response.add_cookie(c)
     return wattle.render_template('simple_page.html', title='Cookie test')
 
-@app.route('/cookie2')
-def cookie_test_modify():
-    c = wattle.cookie_collection['test']
-    c.value = 'a new value'
-    return 'wiie'
 
 if __name__ == '__main__':
     server = wsgiref.simple_server.make_server('', 8090, app)
