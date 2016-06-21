@@ -43,8 +43,6 @@ class App:
                 buffer_mode = 'rb'
             with open(path, buffer_mode) as f:
                 source = f.read()
-                content_length = str(len(source))
-                response.add_header(('Content-length', content_length))
             return source
         else:
             raise NotFoundException()
@@ -58,6 +56,8 @@ class App:
             response.status = ResponseStatus.RESPONSE_STATUS_200
             kwargs, func = route
             response.body = func(**kwargs)
+            content_length = str(len(response.body))
+            response.add_header(('Content-length', content_length))
         else:
             raise NotFoundException()
 
