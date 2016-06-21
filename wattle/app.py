@@ -6,7 +6,7 @@ import sys
 from .routing import Router
 from .request import Request
 from .response import Response, ResponseStatus
-from .resource import ResourceUtil
+from .resource import get_content_type
 
 
 class NotFoundException(BaseException):
@@ -34,11 +34,10 @@ class App:
         return decorator
 
     def _handle_static_resource(self, resource):
-
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
             self.response.headers = [];
-            self.response.headers.append(('Content-type', ResourceUtil._get_content_type(resource)))
+            self.response.headers.append(('Content-type', get_content_type(resource)))
             with open(path) as f:
                 source = f.read()
             return source
