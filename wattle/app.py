@@ -6,7 +6,7 @@ import sys
 from .routing import Router
 from .request import request
 from .response import response, ResponseStatus
-from .resource import get_content_type
+from .resource import resourceUtil
 
 
 class NotFoundException(BaseException):
@@ -36,9 +36,15 @@ class App:
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
             response.clear_headers()
-            response.add_header(('Content-type', get_content_type(resource)))
-            with open(path) as f:
+            response.add_header(('Content-type', resourceUtil.get_content_type(resource)))
+            buffer_mode = 'r'
+            if resourceUtil.is_image(resource):
+                response.encoding = ''
+                buffer_mode = 'rb'
+            with open(path, buffer_mode) as f:
                 source = f.read()
+                content_length = str(len(source))
+                response.add_header(('Content-length', content_length))
             return source
         else:
             raise NotFoundException()
@@ -46,6 +52,7 @@ class App:
     def _handle_request(self):
         response.clear()
         response.add_header(('Content-type', 'text/html; charset=utf-8'))
+        response.encoding = 'utf-8'
         route = self._router.resolve_route(request.path)
         if route:
             response.status = ResponseStatus.RESPONSE_STATUS_200
@@ -65,4 +72,5 @@ class App:
             response.status = ResponseStatus.RESPONSE_STATUS_404
 
         start_response(response.status, response.headers)
-        return [response.body.encode('utf-8')]
+        response.exec_body_encoding()
+        return [response.body]

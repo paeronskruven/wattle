@@ -16,6 +16,7 @@ class Response:
     _status = None
     _headers = []
     _body = ''
+    _encoding = ''
 
     def __init__(self):
         self._base_cookie = http.cookies.BaseCookie()
@@ -43,6 +44,14 @@ class Response:
     def body(self, body):
         self._body = body
 
+    @property
+    def encoding(self):
+        return self._encoding
+
+    @encoding.setter
+    def encoding(self, encoding):
+        self._encoding = encoding
+
     def add_cookie(self, cookie):
         if not isinstance(cookie, Cookie):
             raise TypeError('Excepted <class wattle.cookie.Cookie>, got {}'.format(type(cookie)))
@@ -62,5 +71,9 @@ class Response:
         self._headers = []
         self._body = ''
         self._base_cookie.clear()
+
+    def exec_body_encoding(self):
+        if self._encoding != '':
+            self._body = self.body.encode(self._encoding)
 
 response = Response()
