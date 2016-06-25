@@ -9,6 +9,7 @@ class ResponseStatus:
     # todo: implement all response statuses
     RESPONSE_STATUS_200 = '200 OK'
     RESPONSE_STATUS_404 = '404 NOT FOUND'
+    RESPONSE_STATUS_500 = '500 INTERNAL SERVER ERROR'
 
 
 class Response:

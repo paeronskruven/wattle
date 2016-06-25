@@ -5,7 +5,7 @@ import sys
 import jinja2
 
 
-class Environment(jinja2.Environment):
+class TemplateEnvironment(jinja2.Environment):
 
     def __init__(self):
         super().__init__(
@@ -29,9 +29,9 @@ class TemplateLoader(jinja2.BaseLoader):
         return source, path, lambda: mtime == os.path.getmtime(path)
 
 
-env = Environment()
+template_environment = TemplateEnvironment()
 
 
-def render_template(_name, **kwargs):
-    template = env.get_template(_name)
+def render_template(template_name, **kwargs):
+    template = template_environment.get_template(template_name)
     return template.render(**kwargs)
