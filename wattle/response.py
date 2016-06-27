@@ -78,10 +78,11 @@ class Response:
     def clear_headers(self):
         self._headers = []
 
-    def clear(self):
+    def reset(self):
         self._status = None
         self._headers = []
         self._body = ''
         self._base_cookie.clear()
+        self._encoding = 'utf-8'
 
 response = Response()

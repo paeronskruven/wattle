@@ -7,7 +7,7 @@ import traceback
 from .routing import Router
 from .request import request
 from .response import response, ResponseStatus
-from .resource import resourceUtil
+from .resource import get_content_type
 
 
 class NotFoundException(BaseException):
@@ -42,10 +42,8 @@ class App:
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
             response.clear_headers()
-            response.add_header(('Content-type', resourceUtil.get_content_type(resource)))
-            buffer_mode = 'r'
-            if resourceUtil.is_image(resource):
-                buffer_mode = 'rb'
+            content_type, buffer_mode, response.encoding = get_content_type(resource)
+            response.add_header(('Content-type', content_type))
             with open(path, buffer_mode) as f:
                 source = f.read()
             return source
@@ -60,7 +58,7 @@ class App:
         return None
 
     def _handle_request(self):
-        response.clear()
+        response.reset()
 
         route = self._router.resolve_route(request.path)
         if route:
@@ -88,10 +86,10 @@ class App:
             self._handle_request()
         except NotFoundException:
             # todo: implement 404 html page
-            response.clear()
+            response.reset()
             response.status = ResponseStatus.RESPONSE_STATUS_404
         except:
-            response.clear()
+            response.reset()
             response.status = ResponseStatus.RESPONSE_STATUS_500
             response.body = traceback.format_exc()
 
