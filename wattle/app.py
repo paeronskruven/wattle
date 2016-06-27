@@ -38,9 +38,6 @@ class App:
     def add_preprocessor(self, pp):
         self._preprocessors.append(pp)
 
-    def require_auth(self, func):
-        self._router.add_flags(func, REQUIRE_AUTHORIZATION)
-
     def _handle_static_resource(self, resource):
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
