@@ -4,7 +4,7 @@ import os
 import sys
 import traceback
 
-from .routing import Router, REQUIRE_AUTHORIZATION
+from .routing import Router
 from .request import request
 from .response import response, ResponseStatus
 from .resource import resourceUtil
@@ -26,12 +26,17 @@ class App:
         self._router = Router()
         self._router.add_route('/static/<resource>', self._handle_static_resource)
 
+        self._preprocessors = []
+
     def route(self, path):
         def decorator(func):
             self._router.add_route(path, func)
             return func
 
         return decorator
+
+    def add_preprocessor(self, pp):
+        self._preprocessors.append(pp)
 
     def require_auth(self, func):
         self._router.add_flags(func, REQUIRE_AUTHORIZATION)
@@ -43,7 +48,6 @@ class App:
             response.add_header(('Content-type', resourceUtil.get_content_type(resource)))
             buffer_mode = 'r'
             if resourceUtil.is_image(resource):
-                response.encoding = ''
                 buffer_mode = 'rb'
             with open(path, buffer_mode) as f:
                 source = f.read()
@@ -51,20 +55,32 @@ class App:
         else:
             raise NotFoundException()
 
+    def _handle_preprocessors(self, func, **kwargs):
+        for pp in self._preprocessors:
+            retval = pp(func=func, **kwargs)
+            if retval:
+                return retval
+        return None
+
     def _handle_request(self):
         response.clear()
-        response.add_header(('Content-type', 'text/html; charset=utf-8'))
-        response.encoding = 'utf-8'
+
         route = self._router.resolve_route(request.path)
         if route:
-            kwargs, func, flags = route
-            if flags & REQUIRE_AUTHORIZATION:
-                raise Exception('Requires authentication')
+            kwargs, func = route
 
-            response.status = ResponseStatus.RESPONSE_STATUS_200
-            response.body = func(**kwargs)
-            content_length = str(len(response.body))
-            response.add_header(('Content-length', content_length))
+            retval = self._handle_preprocessors(func, **kwargs)
+            if not retval:
+                retval = func(**kwargs)
+
+            response.body = retval
+            # if no status has been set assume 200 OK
+            if not response.status:
+                response.status = ResponseStatus.RESPONSE_STATUS_200
+            # if no content-type has been set assume text/html
+            if not response.get_header('Content-type'):
+                response.add_header(('Content-type', 'text/html; charset=utf-8'))
+
         else:
             raise NotFoundException()
 
@@ -83,5 +99,4 @@ class App:
             response.body = traceback.format_exc()
 
         start_response(response.status, response.headers)
-        response.exec_body_encoding()
         return [response.body]

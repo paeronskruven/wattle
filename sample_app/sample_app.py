@@ -3,8 +3,10 @@ __author__ = 'Tommy Lundgren'
 import wsgiref.simple_server
 
 import wattle
+import wattle.ext.authentication
 
 app = wattle.App()
+auth = wattle.ext.authentication.Authentication(app)
 
 
 @app.route('/')
@@ -27,7 +29,7 @@ def cookie_test():
     return wattle.render_template('simple_page.html', title='Cookie test')
 
 
-@app.require_auth
+@auth.require
 @app.route('/auth')
 def auth_test():
     return wattle.render_template('simple_page.html', title='Auth test')

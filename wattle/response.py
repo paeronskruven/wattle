@@ -8,8 +8,9 @@ from .cookie import Cookie
 class ResponseStatus:
     # todo: implement all response statuses
     RESPONSE_STATUS_200 = '200 OK'
-    RESPONSE_STATUS_404 = '404 NOT FOUND'
-    RESPONSE_STATUS_500 = '500 INTERNAL SERVER ERROR'
+    RESPONSE_STATUS_403 = '403 Forbidden'
+    RESPONSE_STATUS_404 = '404 Not Found'
+    RESPONSE_STATUS_500 = '500 Internal Server Error'
 
 
 class Response:
@@ -17,7 +18,7 @@ class Response:
     _status = None
     _headers = []
     _body = ''
-    _encoding = ''
+    _encoding = 'utf-8'  # default encoding
 
     def __init__(self):
         self._base_cookie = http.cookies.BaseCookie()
@@ -35,10 +36,14 @@ class Response:
         # add the cookie headers
         for key in self._base_cookie:
             self._headers.append(('Set-Cookie', self._base_cookie[key].OutputString()))
+        # add the content length
+        self._headers.append(('Content-length', str(len(response.body))))
         return self._headers
 
     @property
     def body(self):
+        if isinstance(self._body, str):
+            return self._body.encode(self._encoding)
         return self._body
 
     @body.setter
@@ -64,6 +69,12 @@ class Response:
     def add_header(self, header):
         self._headers.append(header)
 
+    def get_header(self, name):
+        for header in self._headers:
+            if header[0] == name:
+                return header
+        return None
+
     def clear_headers(self):
         self._headers = []
 
@@ -72,9 +83,5 @@ class Response:
         self._headers = []
         self._body = ''
         self._base_cookie.clear()
-
-    def exec_body_encoding(self):
-        if self._encoding != '':
-            self._body = self.body.encode(self._encoding)
 
 response = Response()
