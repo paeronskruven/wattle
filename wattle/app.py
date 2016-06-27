@@ -7,7 +7,7 @@ import traceback
 from .routing import Router
 from .request import request
 from .response import response, ResponseStatus
-from .resource import get_content_type
+from .resource import get_resource_type_data
 
 
 class NotFoundException(BaseException):
@@ -42,7 +42,7 @@ class App:
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
             response.clear_headers()
-            content_type, buffer_mode, response.encoding = get_content_type(resource)
+            content_type, buffer_mode, response.encoding = get_resource_type_data(resource)
             response.add_header(('Content-type', content_type))
             with open(path, buffer_mode) as f:
                 source = f.read()

@@ -9,7 +9,7 @@ _static_resources = {
 }
 
 
-def get_content_type(resource):
+def get_resource_type_data(resource):
     suffix = _get_file_suffix(resource)
 
     return _static_resources.get(suffix)
