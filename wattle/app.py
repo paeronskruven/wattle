@@ -14,10 +14,6 @@ class NotFoundException(BaseException):
     pass
 
 
-class InvalidResourceTypeException(BaseException):
-    pass
-
-
 class App:
 
     static_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'static')
@@ -41,16 +37,15 @@ class App:
     def _handle_static_resource(self, resource):
         path = os.path.join(self.static_path, resource)
         if os.path.exists(path):
-            response.clear_headers()
-            content_type, buffer_mode, response.encoding = get_resource_type_data(resource)
+            content_type, buffer_mode = get_resource_type_data(resource)
             response.add_header(('Content-type', content_type))
             with open(path, buffer_mode) as f:
                 source = f.read()
             return source
         else:
-            raise NotFoundException()
+            raise NotFoundException('Could not find resource: {}'.format(resource))
 
-    def _handle_preprocessors(self, func, **kwargs):
+    def _handle_preprocessors(self, func, kwargs):
         for pp in self._preprocessors:
             retval = pp(func=func, **kwargs)
             if retval:
@@ -64,7 +59,7 @@ class App:
         if route:
             kwargs, func = route
 
-            retval = self._handle_preprocessors(func, **kwargs)
+            retval = self._handle_preprocessors(func, kwargs)
             if not retval:
                 retval = func(**kwargs)
 
@@ -75,9 +70,8 @@ class App:
             # if no content-type has been set assume text/html
             if not response.get_header('Content-type'):
                 response.add_header(('Content-type', 'text/html; charset=utf-8'))
-
         else:
-            raise NotFoundException()
+            raise NotFoundException('Could not find route on path: {}'.format(request.path))
 
     def __call__(self, environ, start_response):
         request.parse_env(environ)
