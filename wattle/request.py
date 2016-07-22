@@ -22,6 +22,7 @@ class Request:
 
     def _parse_cookies(self):
         self._base_cookie.clear()
+        self.cookies.clear()
         if not self._http_cookie:
             return
 

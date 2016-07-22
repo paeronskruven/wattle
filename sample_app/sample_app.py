@@ -3,18 +3,18 @@ __author__ = 'Tommy Lundgren'
 import wsgiref.simple_server
 
 import wattle
-import wattle.ext.authentication
+import wattle.plugins.authentication
 
 app = wattle.App()
-auth = wattle.ext.authentication.Authentication(app)
+auth = wattle.plugins.authentication.Authentication(app)
 
 
-@app.route('/')
+@app.set_route('/')
 def home():
     return wattle.render_template('home.html')
 
 
-@app.route('/test1')
+@app.set_route('/test1')
 def test1():
     param1 = 'This is the first parameter'
     param2 = 'The number is: '
@@ -22,7 +22,7 @@ def test1():
     return wattle.render_template('test1.html', param1=param1, param2=param2, param3=param3)
 
 
-@app.route('/cookie')
+@app.set_route('/cookie')
 def cookie_test():
     c = wattle.Cookie('test', 'ilikecookies2')
     wattle.response.add_cookie(c)
@@ -30,7 +30,7 @@ def cookie_test():
 
 
 @auth.require
-@app.route('/auth')
+@app.set_route('/auth')
 def auth_test():
     return wattle.render_template('simple_page.html', title='Auth test')
 

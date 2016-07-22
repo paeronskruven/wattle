@@ -8,6 +8,7 @@ from .routing import Router
 from .request import request
 from .response import response, ResponseStatus
 from .resource import get_resource_type_data
+from .config import read_config
 
 
 class NotFoundException(BaseException):
@@ -19,20 +20,23 @@ class App:
     static_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'static')
 
     def __init__(self):
+        # read the configuration from file or load default
+        read_config()
+        # create an router to hold all the routes and add a route for the static resources
         self._router = Router()
         self._router.add_route('/static/<resource>', self._handle_static_resource)
+        # initialize empty array for plugins
+        self._plugins = []
 
-        self._preprocessors = []
-
-    def route(self, path):
+    def set_route(self, path):
         def decorator(func):
             self._router.add_route(path, func)
             return func
 
         return decorator
 
-    def add_preprocessor(self, pp):
-        self._preprocessors.append(pp)
+    def add_plugin(self, plugin):
+        self._plugins.append(plugin)
 
     def _handle_static_resource(self, resource):
         path = os.path.join(self.static_path, resource)
@@ -45,9 +49,9 @@ class App:
         else:
             raise NotFoundException('Could not find resource: {}'.format(resource))
 
-    def _handle_preprocessors(self, func, kwargs):
-        for pp in self._preprocessors:
-            retval = pp(func=func, **kwargs)
+    def _handle_plugins(self, func, kwargs):
+        for plugin in self._plugins:
+            retval = plugin(func=func, **kwargs)
             if retval:
                 return retval
         return None
@@ -59,7 +63,7 @@ class App:
         if route:
             kwargs, func = route
 
-            retval = self._handle_preprocessors(func, kwargs)
+            retval = self._handle_plugins(func, kwargs)
             if not retval:
                 retval = func(**kwargs)
 
